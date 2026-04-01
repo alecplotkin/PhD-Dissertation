@@ -1,0 +1,89 @@
+
+\subsection{Transport maps}
+
+We consider datasets of cells $\mathcal{X}_s = \left\{\vect{x}\timepoint{s}(a) \in \mathbb{R}^{g}\right\}_{a=0}^{N_{s}}$ consisting of $N_s$ cells with $g$ features sampled at time point $s \in \left\{t_i\right\}_{i=0}^{T}$. Datasets from multiple timepoints are compiled into a combined dataset $\mathcal{X} = \left\{\mathcal{X}_{t_i}\right\}_{i=0}^{T}$. Here, we are working with models that fit mappings of the form $T\timepoint{r, s}: \mathcal{X}\timepoint{r} \rightarrow \mathcal{X}\timepoint{s}$ between cell sets at time points $r$ and $s$. Since we are dealing with discrete cell sets, we represent the mapping as a matrix, where the element $\matr{T}_{r, s}(a, b)$ contains the amount of mass transported from cell state $\vect{x}\timepoint{r}(a)$ to state $\vect{x}\timepoint{s}(b)$.
+
+We obtain the stochastic matrix $\matr{P}\timepoint{r \given s}$ by column-normalizing $\matr{T}\timepoint{r, s}$:
+
+\begin{equation}
+    \matr{P}_{r \given s}(a, b) = \frac{\matr{T}_{r, s}(a, b)}{\sum_{a'} \matr{T}_{r, s}(a', b)}   
+\end{equation}
+
+Here, $\matr{P}\timepoint{r \given s}(a, b)$ represents the probability that a cell at state $\vect{x}\timepoint{s}(b)$ at time $s$ originated from state $\vect{x}\timepoint{r}(a)$ at time $r$. \footnote{This assumes that $r < s$. We also use the same convention when $r > s$, in which case $p\left(\vect{x}\timepoint{r}(a) \given[\big] \vect{x}\timepoint{s}(b)\right)$ represents the probability of observing a cell at state $\vect{x}\timepoint{r}(a)$ at time $r$ by randomly sampling descendants of a cell originating at state $\vect{x}\timepoint{s}(b)$ at time $s$.}
+
+\subsection{Trajectory featurization}
+
+Given a vector-valued function $\vect{f}\timepoint{r}: \mathcal{X}\timepoint{r} \rightarrow \mathbb{R}^d$ defined at time point $r$, we can now define its pushforward under $T_{r, s}$ as: 
+
+\begin{align} \label{eq:pushforward}
+    \left(\matr{P}\timepoint{r \given s} \pushforward \vect{f}\timepoint{r}\right)\bigl(\vect{x}\timepoint{s}(b)\bigr) \equiv \sum_{a} \matr{P}\timepoint{r \given s}(a, b) \vect{f}\timepoint{r}\bigl(\vect{x}\timepoint{r}(a)\bigr) = \mathbb{E}_{T\timepoint{r, s}}\left[\vect{f}\timepoint{r} \given \vect{x}\timepoint{s}(b)\right]
+\end{align}
+
+This pushforward represents the expected value of $\vect{f}\timepoint{r}$ for a cell at state $\vect{x}\timepoint{s}(b)$.
+
+Next, we use the pushforward operator to define features for cell state $\vect{x}\timepoint{s}(b)$ across all time points in the trajectory model. We concatenate these together to form the trajectory featurization vector $\vect{\tau}: \mathcal{X}\timepoint{s} \rightarrow \mathbb{R}^{Td}$:
+
+\begin{equation} \label{eq:trajectory_features}
+    \vect{\tau}(\vect{x}\timepoint{s}(b)) = \Bigl[\left(\matr{P}\timepoint{t_i \given s} \pushforward \vect{f}\timepoint{t_i}\right) \bigl(\vect{x}\timepoint{s}(b)\bigr)\Bigr]_{i=1}^{T}
+\end{equation}
+
+When $t_i = s$, we define $\matr{P}\timepoint{s \given s} = \matr{I}\timepoint{s}$, and the pushforward reduces to evaluating $\vect{f}\timepoint{s}\left(\vect{x}\timepoint{s}(b)\right)$.
+
+This approach creates a feature vector for each cell that allows its trajectory to be compared to all cells in the dataset, even if they were sampled at different timepoints. Use of an informative featurization function $\vect{f}$ allows this vector to contain cell state information at each time point of the trajectory, using a relatively low number of features. For example, principal component decomposition is commonly used in single-cell biology, generally with feature dimension $10 \leq d \leq 50$. Compare this to a naive featurization approach utilizing the one-hot encoding $\Tilde{\vect{f}}\timepoint{r}: \mathbb{R}^{g} \rightarrow \mathbb{R}^{N\timepoint{r}}$:
+
+\begin{equation*} \label{eq:naive_feature}
+    \Tilde{f}\timepoint{r}\left(\vect{x}\timepoint{r}(a')\right)(a) = \delta\left[\vect{x}\timepoint{r}(a') = \vect{x}\timepoint{r}(a)\right] = \begin{cases}
+        1 & \vect{x}\timepoint{r}(a') = \vect{x}\timepoint{r}(a) \\
+        0 & \vect{x}\timepoint{r}(a') \neq \vect{x}\timepoint{r}(a)
+    \end{cases}
+\end{equation*}
+
+Applying our approach to $\Tilde{\vect{f}}\timepoint{r}$ will yield a trajectory with $\sum_{i=1}^T N_{t_i}$ features. In single-cell datasets, we generally have $N\timepoint{r} = \mathcal{O}(10^{3})$ cells per time point, making $\Tilde{\vect{f}}\timepoint{r}$ inefficient compared to a function with fewer features. Another advantage of using our approach with an informative featurization function is that it allows us to compare trajectories defined on different cell sets $\hat{\mathcal{X}}^1$ and $\hat{\mathcal{X}}^2$, as long as they share time points and embedding spaces.
+
+\subsection{Kernel mean embedding}
+
+We now discuss a specific choice of featurization function with desirable properties. We showed in \eqref{eq:pushforward} that the normalized pushforward induced by $T\timepoint{r, s}$ computes the expected value $\mathbb{E}_{T\timepoint{r, s}}\left[\vect{f}\timepoint{r} \given \vect{x}\timepoint{s}(b)\right]$. While useful, this also disregards higher-order distributional information about the trajectory. This may not be ideal, for example in differentiation paths with complicated bifurcations.
+
+To address this shortcoming, we turn to kernel-based approaches. Kernel methods have found widespread use in machine learning and have proven useful for applications in single-cell biology \citep{baskaranDistributionbasedSketchingSinglecell2022a}. A positive-definite kernel function $K: \mathbb{R}^g \times \mathbb{R}^g \rightarrow \mathbb{R}$ can be used to evaluate the similarity between data points, and induces a reproducing kernel Hilbert space (RKHS) with the property $\langle K(\vect{x}, \cdot), \vect{f}(\cdot)\rangle = \vect{f}(\vect{x})$. If we use a \textit{characteristic kernel}, we can uniquely embed any probability distribution into the RKHS.
+
+A feature map $\vect{\phi}: \mathbb{R}^g \rightarrow \mathbb{R}^d$ is a finite-dimensional approximation of this kernel embedding that retains the reproducing property. In this application, we choose a feature map induced by the radial basis function (RBF) as our featurization function $\vect{f}\timepoint{r}$. Since the RBF is a characteristic kernel, operations such as addition of feature maps $\sum \phi(x)$ preserve the distributional characteristics of the trajectory. Specifically, the pushforward measure induces the \textit{kernel mean embedding} (KME) $\vect{\mu}$ of the probability distribution underlying the trajectory:
+
+\begin{equation} \label{eq:kme}
+    \vect\mu(\mathcal{X}\timepoint{r}  \given  \vect{x}\timepoint{s}(b)) = \mathbb{E}_{T\timepoint{r, s}}\left[\vect{\phi}\timepoint{r} \given \vect{x}\timepoint{s}(b)\right] = \left(\matr{P}\timepoint{r\given s} \pushforward \vect{\phi}\timepoint{r}\right) \left(\vect{x}\timepoint{s}(a)\right)
+\end{equation}
+
+The trajectory featurization then becomes:
+
+\begin{equation}
+    \vect{\tau}\left(\vect{x}\timepoint{s}(b)\right) = \Bigl[\vect{\mu}\left(\mathcal{X}\timepoint{t_i} \given \vect{x}\timepoint{s}(b)\right)\Bigr]_{i=1}^T
+\end{equation}
+
+Using a characteristic kernel has the property that the distance between two kernel mean embeddings $\|\vect{\mu}_P - \vect{\mu}_Q\|$ induced by probability distributions $P, Q$ is equal to 0 if and only if $P=Q$. This induces a divergence called the maximum mean discrepancy (MMD), which may be used to compare distributions. For example, it is possible to formulate a statistical test for the difference between two distributions based on their MMD \citep{grettonKernelTwoSampleTest2012}.
+
+The trajectory featurization inherits these properties. Given two trajectory feature vectors, the squared $L2$-distance between them is:
+
+\begin{equation}
+    \left\| \vect{\tau}\left(\vect{x}\timepoint{s}(b)\right) - \vect{\tau}\left(\vect{x}\timepoint{s'}(b')\right) \right\|_2^2 = \sum_{i=1}^T \operatorname{MMD}^2 \left( \vect{\mu}\left(\mathcal{X}\timepoint{t_i} \given \vect{x}\timepoint{s}(b)\right), \vect{\mu}\left(\mathcal{X}\timepoint{t_i} \given \vect{x}\timepoint{s'}(b')\right) \right)
+\end{equation}
+
+We define this as the \textit{trajectory divergence}. This allows us to compute the distance between two trajectories, for applications such as performing hypothesis tests for experimental conditions versus a control, or comparing a computational trajectory against ground-truth data.
+
+\subsection{Cluster evaluation metrics}
+
+Another application of our method is clustering cells with similar trajectories across time points. Single-cell trajectory feature vectors can be input to any clustering algorithm; in this work, we use k-means. In order to quantify how well different clusterings represent the underlying trajectories, we develop two metrics to measure cluster quality with respect to a trajectory model. The first of these is flow consistency, which we define as the mean probability that a cell is transported to a target within the same cluster as its source:
+
+\begin{equation} \label{eq:flow_consistency}
+    \operatorname{consistency}\left( \vect{c}\timepoint{r} \given \vect{c}\timepoint{s} \right) = \frac{1}{N\timepoint{s}} \sum_{b=1}^{N\timepoint{s}} \sum_{a=1}^{N\timepoint{r}} \delta\left[c\timepoint{r}(a) = c\timepoint{s}(b)\right] \matr{P}\timepoint{r \given s}(a, b)
+    % &= \frac{1}{\|\mathcal{S}\timepoint{t}\|} \operatorname{trace}(\matr{C}\timepoint{s}\tran \matr{P}\timepoint{s|t} \matr{C}\timepoint{t}) \label{eq:flow_consistency}
+\end{equation}
+
+Here, $c\timepoint{r}(a)$ denotes the cluster assignment for cell $a$ at target time point $r$, $c\timepoint{s}(b)$ is the cluster assignment for cell $b$ at source time point $s$, and $\delta$ is the Kronecker delta. This metric ranges from 0 to 1, and is higher when cells are most likely to remain in the same cluster over time.
+
+We also define flow entropy, which is agnostic to the source cluster assignment, and is defined as:
+
+\begin{align}
+    \operatorname{entropy}\left( \mathcal{X}\timepoint{r} \given \vect{c}\timepoint{s} \right) &= \frac{-1}{N\timepoint{s}} \sum_{b=1}^{N\timepoint{s}} \sum_{k=1}^{K} p\left( c\timepoint{r} = k \given \vect{x}\timepoint{s}(b) \right) \operatorname{log} p\left( c\timepoint{r} = k \given \vect{x}\timepoint{s}(b) \right) \label{eq:flow_entropy}, \\
+    p\left( c\timepoint{r} = k \given \vect{x}\timepoint{s}(b) \right) &= \sum_{a=1}^{N\timepoint{r}} \delta\left[ c\timepoint{r}(a) = k \right] \matr{P}\timepoint{r \given s} (a, b) \nonumber
+\end{align}
+
+The flow entropy is susceptible to variation in the number and size of target clusters, so we normalize it by dividing the entropy under the trajectory model by the overall entropy of clusters at the target time point. The resulting \textit{entropy ratio} varies between 0 and 1, with values closer to 0 representing target clusters that align better with the trajectory model.
