@@ -64,3 +64,7 @@ All bibliography entries go in `diss.bib`.
 - Appendix chapter headings reset to 1" top margin via `\titlespacing{\chapter}{0in}{-.38in}{11pt}` in `diss.tex`
 - Chapter headings are formatted as "CHAPTER N: TITLE" (all caps, same line, normal font size)
 - Graduate school requirements change yearly — verify current specs before submission
+
+# Rules
+
+- Only edit formatting, never edit prose unless specifically prompted. Always ask for verification before editing prose.
