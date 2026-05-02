@@ -1,19 +1,62 @@
 \chapter{Introduction}
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.   
 
-Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.   
+\section{Single Cell Analysis}
 
-Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.   
+Single cell sequencing technologies have enabled in-depth exploration of the previously unfathomable heterogeneity of cell states. Technologies targeting biomolecules such as RNA and chromatin give rise to a rich set of features that can be used to describe cells. These features have in turn spurred the development of computational methods to analyze the statistical and distributional properties of sets of cells from a variety of experimental conditions. 
 
-Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer
+Single cell analysis has revealed that cell states tend to lie near low-dimensional manifolds embedded in high-dimensional feature space. Roughly speaking, a manifold is a topological space that locally resembles Euclidean space, while potentially exhibiting global curvature or more complex structure. In the context of cellular data, this implies that interpolation between nearby cells in feature space is more likely to produce biologically plausible states, but that interpolation between distant cells may yield implausible ones. This apparent manifold structure is often interpreted as reflecting underlying nonlinear regulatory relationships governing cell state. This perspective is closely related to Waddington's epigenetic landscape, which conceptualizes development as trajectories of cells rolling down a landscape shaped by gene regulation and epigenetic factors.
 
+The fact that only a small region of feature space is biologically feasible has led to the development of computational analysis tools that conform to this structure. Graph-based methods exploit cell neighborhood heuristics to fit approximate manifolds; more recently, deep learning methods such as variational autoencoders and denoising diffusion models have enabled translating between arbitrary distributions, allowing interpolation to occur in a smooth latent space before translating back into non-Euclidean feature space.
 
+% This section will provide an overview of analysis tasks on single cell data and associated computational methods, focusing on cell state clustering and annotation, data integration, and trajectory inference.
+%
+% \subsection{Clustering}
+%
+% TODO: Manifold structure of data, preprocessing methods, manifold learning (kNN graph).
+%
+% \subsection{Integration}
+%
+% TODO: Statistical methods (Harmony, SCVI), graph-based methods.
+%
+\subsection{Trajectory inference}
 
-\section{A Very Long Section Title that Should be Split Across Two Lines in the Table of Contents}
+A fundamental limitation of single cell sequencing is its destructive nature---a cell can only be sequenced at a single timepoint, ruling out traditional longitudinal analysis methods \citep{saelensComparisonSinglecellTrajectory2019}. In order to study dynamic biological processes like differentiation or perturbation response kinetics, it is necessary to sample cells at different phases of the dynamic response. A single timepoint may suffice for some asynchronous processes or ensembles of cells in equilibrium, for example cell cycle in homeostasis; however in general it is necessary to sequence independent samples across timepoints.
 
+The challenge of reconstructing cell dynamics from snapshot data has spurred the development of computational frameworks to reveal how cells traverse the cell state manifold. We can divide these into three broad classes, comprising pseudotime, velocity, and time-resolved methods.
 
-Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.   
+% \subsubsection{Pseudotime methods}
+Pseudotime methods seek to assess the relative degree of differentiation of cells from an initial state, which is generally specified a priori. TODO: expand on a few common methods.
 
-Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.   
+% \subsubsection{Velocity methods}
+Velocity methods exploit molecular mismatches between experimentally measured modalities (e.g., between spliced and unspliced mRNA data, or between chromatin accessibility and downstream gene expression) to fit an instantaneous cell velocity in feature space using idealized conservation laws. TODO: expand on RNA velocity, extension to chromatin velocity. 
 
-Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer
+Velocity methods are inherently noisy, since they both require approximations of complex regulatory cascades and assess instantaneous rates of change for stochastic cellular processes. As such, they may be unreliable in isolation, and have been found to work best when used in conjunction with other frameworks \citep{ranekIntegratingTemporalSinglecell2022, langeCellRankDirectedSinglecell2022}.
+
+% \subsubsection{Time-resolved methods}
+Time-resolved methods, in contrast, seek to reconstruct continuous cell trajectories using discretely sampled timepoints, explicitly incorporating temporal information. One prominent class of time-resolved inference methods uses optimal transport (OT) to fit cell-state couplings between timepoints by minimizing the cost of transporting cell distributions between timepoints. This is especially appealing for non-equilibrium systems that evolve over time. While time-resolved OT methods are more robust to transient noise than velocity and pseudotime methods, their reliability degrades for large gaps between timepoints. Therefore, OT methods are most suitable for datasets with fine temporal resolution \citep{schiebingerOptimalTransportAnalysisSingleCell2019}.
+
+All of the approaches above share a unifying theoretical framework: the representation of cell trajectories as a diffusion-drift process along the cell-state manifold \citep{lavenantMathematicalTheoryTrajectory2021}. This allows us to conceptualize changes in cell state as arising from deterministic drift effects, for example arising from gene regulatory networks, in addition to stochastic effects (diffusion). The key goal of many trajectory inference methods is to quantify single cell drift effects, thus learning about the regulatory relationships underlying cellular trajectories \citep{shaReconstructingGrowthDynamic2024}.
+
+This theoretical framework has increasingly informed trajectory inference methods, and many modern approaches integrate some combination of instantaneous velocity, manifold structure, and temporal regularization into a single method. For example, TrajectoryNet \citep{tongTrajectoryNetDynamicOptimal2020} utilizes a manifold distance along the k-NN graph to solve a dynamic OT problem, while CurlyFM \citep{petrovicCurlyFlowMatching2025a} regularize trajectory streamlines using instantaneous velocity estimates.
+
+% The shared view on single cell trajectories. Diffusion-drift, Schrodinger bridges.
+
+% Visualization and clustering methods based on trajectory data.
+
+\section{CD8 T cells}
+
+CD8 T cells are cytotoxic effectors of the adaptive immune system. As cytotoxic effectors, these cells are responsible for clearing pathogens by killing cells which present non-self antigens, indicating intracellular infection or cancer. As members of the adaptive immune system, these cells exhibit high specificity for a small range of epitopes present on an antigen, enabling potent immune responses and forming the basis for immunological memory.
+
+Naive CD8 T cells become activated after encountering their cognate antigen as presented on the major histocompatibility complex type I (MHC-I) of a so-called antigen presenting cell. The cognate antigen binds to the specific T-cell receptor (TCR), leading to a cell signaling cascade that activates proliferative and effector programs in the cell. This leads to a wave of proliferative clonal expansion, where the population of activated CD8 T cells increases up to 500,000-fold \citep{zhangCD8CellsFoot2011} in order to execute an immune response. Effector T cells patrol the circulatory and lymphatic systems, infiltrating sites of inflammation in peripheral tissues according to chemokine gradients. Once antigen is cleared, the cessation of inflammatory proliferation and survival signals leads to the attenuation of terminally-differentiated populations, leaving a remnant group of stem-like long-lived memory cells.
+
+Heterogeneity in the early effector T cell population leads to a spectrum of differentiation states, encompassing differential cytotoxic, proliferative, and migratory capacities. The sources of this heterogeneity are multifaceted, and include clonal variation in antigen binding affinity, extracellular signals received activation, and even innate biases in the naive CD8 T cell pool. Understanding how these factors work together to influence CD8 T cell state is crucial for engineering durable immune responses.
+
+\subsection{CD8 T cell subsets}
+
+Although CD8 differentiation comprises a continuum of cell states, there are several specific subsets that are defined by similar states with related functions. Naive CD8 T cells express CD62L (\textit{Sell}), which helps them migrate to lymph nodes where activation occurs. These are the most stem-like subset, having not yet encountered their cognate antigen. Activated CD8 T cells have encountered antigen and initiated gene expression programs preparing them for effector responses, but are not yet terminally differentiated. These cells are distinguished from naive cells by downregulation of CD62L and expression of markers like CD44 (\textit{Cd44}) and CD25 (\textit{Il2ra}), the latter of which receives signals from IL-2 which are vital for proliferation and survival. Activated cells develop into early effectors (T\textsc{EE}), which themselves give rise to distinct terminal effector (T\textsc{TE}) and memory precursor (T\textsc{MP}) populations. T\textsc{TE} are distinguished by high expression of KLRG1 (\textit{Klrg1}) and low expression of IL7R (\textit{Il7r}). These cells are cytotoxic and, as the name suggests, terminally differentiated. In contrast, T\textsc{MP} are defined by high IL7R and low KLRG1 expression, and are more quiescent and stem-like than their more differentiated counterparts.
+
+After infection is cleared, any remaining antigen-specific CD8 T cells are referred to as memory cells, and may be further subdivided into central memory (T\textsc{CM}), effector memory (T\textsc{EM}), and tissue-resident memory (T\textsc{RM}). T\textsc{CM} primarily reside in the lymphatic system, and express high levels of CD62L. These are the most stem-like memory subset, and have the highest capacity to generate durable responses upon re-exposure to antigen. T\textsc{EM} do not express CD62L, and patrol the circulatory system as well as transiently entering peripheral tissues. Finally, T\textsc{RM} permanently reside in peripheral tissues, expressing high levels of CD69 (\textit{Cd69}) and CD103 (\textit{Itgae}) that facilitate tissue homing and retention. All of these populations may be further subdivided based on differentiation status---for example, the most terminally differentiated portion of T\textsc{EM} may be referred to as terminal effector memory T(\textsc{TEM}) \citep{milnerDelineationMolecularlyDistinct2020}; similarly, T\textsc{RM} can be divided into progenitor T(\textsc{RM}-prog) and terminal T(\textsc{RM}-term) subtypes, depending on gene expression clustering as well as spatial location \citep{kurdEarlyPrecursorsMolecular2020, reina-camposTissueresidentMemoryCD82025}.
+
+\section{Dissertation structure}
+
+TODO
