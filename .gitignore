@@ -243,3 +243,6 @@ TSWLatexianTemp*
 
 # Python
 __pycache__/
+
+# Zotero export (local only; references.bib is the committed BibTeX version)
+MyLibrary.bib

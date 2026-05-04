@@ -18,11 +18,7 @@ ENTRY_HEADER = re.compile(r'@\w+\{(\w[\w:.\-+]+),', re.MULTILINE)
 
 # Manual patches for entries missing data in MyLibrary.bib.
 # 'insert_fields' are added after the opening @type{key, line.
-PATCHES = {
-    'CurrentBestPractices2019': {
-        'insert_fields': [('author', 'Luecken, Malte D. and Theis, Fabian J.')],
-    },
-}
+PATCHES = {}
 
 
 def collect_cite_keys(tex_globs):
@@ -49,7 +45,12 @@ def apply_patch(entry, key):
 
 
 def generate(bib_path='MyLibrary.bib', out_path='references.bib',
-             tex_globs=('ch2/*.tex', 'ch3/main.tex')):
+             tex_globs=('ch*.tex', 'ch*/*.tex', 'ap*.tex')):
+    import os
+    if not os.path.exists(bib_path):
+        print(f'  {bib_path} not found, skipping regeneration')
+        return
+
     keys = collect_cite_keys(tex_globs)
     print(f'  {len(keys)} cite keys found in tex sources')
 
@@ -60,7 +61,7 @@ def generate(bib_path='MyLibrary.bib', out_path='references.bib',
     parts = []
     for m in ENTRY_HEADER.finditer(lib):
         key = m.group(1)
-        if key not in keys or key in written:
+        if key in written:
             continue
         brace_pos = lib.index('{', m.start())
         try:
