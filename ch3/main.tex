@@ -1,41 +1,11 @@
 \chapter{Optimal transport fate mapping resolves T cell differentiation
 dynamics across tissues}
 
-Alec L. Plotkin\textsuperscript{1,2,3}, Genevieve N.
-Mullins\textsuperscript{3,4}, William D. Green\textsuperscript{3,5},
-Huitong Shi\textsuperscript{3}, H. Kay Chung\textsuperscript{3,4},
-Natalie Stanley\textsuperscript{1,2,7,*}, J. Justin
-Milner\textsuperscript{3,5,\emph{*}}
-
-\textsuperscript{1}Department of Genetics, University of North Carolina
-at Chapel Hill, Chapel Hill, NC 27599, USA
-
-\textsuperscript{2}Computational Medicine Program, University of North
-Carolina at Chapel Hill, Chapel Hill, NC 27599, USA
-
-\textsuperscript{3}Lineberger Comprehensive Cancer Center, University of
-North Carolina at Chapel Hill, Chapel Hill, NC 27599, USA
-
-\textsuperscript{4}Department of Cell Biology and Physiology, University
-of North Carolina at Chapel Hill, Chapel Hill, NC 27599, USA
-
-\textsuperscript{5}Department of Microbiology and Immunology, University
-of North Carolina at Chapel Hill, Chapel Hill, NC 27599, USA
-
-\textsuperscript{6}Center for Nanotechnology in Drug Delivery, Eshelman
-School of Pharmacy, University of North Carolina at Chapel Hill, Chapel
-Hill, NC 27599, USA
-
-\textsuperscript{7}Department of Computer Science, University of North
-Carolina at Chapel Hill, Chapel Hill, NC 27599, USA
-
-*Co-Correspondence: justin\_milner@med.unc.edu; natalies@cs.unc.edu
-
-\section{SUMMARY}
+\section{Summary}
 
 Immune responses evolve across time and tissues through coordinated programs of proliferation, differentiation, and migration, yet most single-cell measurements capture only static molecular snapshots. As a result, reconstructing how immune cells transition between alternative fates remains challenging, particularly for CD8 T cells, whose differentiation is highly dynamic and shaped by rapid expansion, contraction, and tissue trafficking. Here, we introduce an optimal transport-based fate mapping framework that reconstructs continuous CD8 T cell trajectories across time and tissues. Applied to longitudinal single-cell RNA-seq data from CD8 T cells responding to acute viral infection in mice, this approach accurately recapitulates population dynamics and resolves coherent effector and memory T cell differentiation trajectories. Extending the model to multiple tissues, we identify and experimentally validate temporally distinct waves of migration into the small intestine that give rise to divergent tissue-resident memory (T\textsc{rm}) fates, long-lived T cells crucial in immunosurveillance. By integrating optimal transport inference with time-resolved \emph{in vivo} labeling, we demonstrate that CD52 marks recent tissue entrants and distinguishes them from T\textsc{rm} precursors. Finally, trajectory-guided analysis of transcription factor regulons reveals both shared and context-specific gene regulatory programs and identifies AP4 as a key regulator of circulating versus tissue-resident specification. These results establish optimal transport as a principled framework for reconstructing immune cell fate dynamics and provide a quantitative map of early events governing antiviral CD8 T cell differentiation across tissues.
 
-\section{INTRODUCTION}
+\section{Introduction}
 
 Lymphocyte responses to infection represent one of the most dynamic differentiation programs in mammalian biology. This regulated process encompasses rapid clonal expansion, diversification into multiple functional states, migration across anatomical compartments, and long-term persistence as immunological memory \citep{changMolecularRegulationEffector2014, kohCD8TcellSubsets2023, adamsClonalExpansionInnate2020, masopustIntegrationCellMigration2013}. From a computational perspective, these dynamics must be inferred from static molecular snapshots, even as individual cells continue to change state, proliferate, and undergo apoptosis over time \citep{lavenantMathematicalTheoryTrajectory2021, huangVivoCRISPRScreening2021, yoonCellCycleTime2010}. These features underscore a central challenge in single-cell immune profiling: accurately reconstructing cell fates from independent and discrete timepoints in dynamic and migrating populations. Addressing this challenge is crucial for robust interpretation of single-cell datasets and for identifying molecular drivers that can be harnessed to steer immune cell differentiation toward therapeutically desirable states \citep{heSquidiffPredictingCellular2026, parkBayesianFrameworkInferring2024, baileyConstructingCureEngineering2025}.
 
@@ -49,7 +19,7 @@ By applying OT fate mapping to longitudinal single-cell CD8 T cell datasets from
 
 This work establishes OT as a powerful framework for reconstructing lymphocyte fate transitions in systems shaped by proliferation, death, and migration, and provides a quantitative atlas of context-dependent CD8 T cell differentiation programs during active infection. While considering T cell states as discrete, static endpoints has been instrumental in providing insights into the molecular programs governing T cell fate \citep{gilesSharedDistinctBiological2022, greenEnhancerdrivenGeneRegulatory2025, changMolecularRegulationEffector2014, kaechTranscriptionalControlEffector2012}, immune responses are more accurately described as continuous, probabilistic shifts across a dynamic state space \citep{gerlachHeterogeneousDifferentiationPatterns2013, moldDivergentClonalDifferentiation2021, moldClonallyHeritableGene2024, roychoudhuriTranscriptionalProfilesReveal2015}. By explicitly modeling these transitions, our approach captures the dynamic nature of T cell differentiation and the intricacies of T cell specification and trafficking. Beyond acute infection, this framework is broadly applicable to diverse disease settings such as chronic infection \citep{danielDivergentClonalDifferentiation2022, quezadaEarlyTranscriptionalEpigenetic2023}, autoimmunity \citep{geartyAutoimmuneStemlikeCD82022}, and cancer, where T cell state transitions can be manipulated to enhance immunotherapy responses \citep{ellisGeneticEngineeringCells2021, baileyConstructingCureEngineering2025}.
 
-\section{RESULTS}
+\section{Results}
 
 \subsection{Optimal transport reconstructs dynamic CD8 T fates during acute antiviral responses. }
 
@@ -269,7 +239,7 @@ In contrast, the \emph{Tfap4}(+) module displayed compartment-specific kinetics.
 \end{figure}
 \clearpage
 
-\section{DISCUSSION}
+\section{Discussion}
 
 In this study, we developed an OT-based framework to reconstruct CD8 T cell fate flows across time and tissue during viral infection. By explicitly accounting for population expansion, contraction, and migration, our approach addresses several practical limitations of trajectory inference in highly non-equilibrium immune responses. Integrating circulating and tissue-resident compartments, we provide a unified ``fate-flow'' view of CD8 T cell differentiation and highlight early, context-dependent events that ultimately shape subsequent effector and memory outcomes.
 
